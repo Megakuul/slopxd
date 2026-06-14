@@ -114,6 +114,15 @@ local function completion_items(bufnr, row, col)
   local items, seen = {}, {}
   local last = parts[#parts]
 
+  -- flake.nix gets a hardcoded schema (inputs/outputs attribute names) plus
+  -- system-agnostic scaffolding snippets that nixd cannot provide.
+  local flake = require('slopxd.flake')
+  if flake.is_flake(bufnr) then
+    if flake.add_items(bufnr, row, col, parts, items, seen) == 'exclusive' then
+      return items
+    end
+  end
+
   if #parts == 0 then
     -- Context-sensitive attribute suggestions first.
     if inside_call(bufnr, row, col, META_PATTERNS, 40) then
